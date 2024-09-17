@@ -7,6 +7,8 @@ output: github_document
 
 ```{r setup, echo=FALSE, message=FALSE}
 library(tidyverse)
+library(readxl)
+library(haven)
 ```
 
 This document will show how to import data.
@@ -17,7 +19,7 @@ This document will show how to import data.
 Import the dataset and clean the names.
 
 ```{r}
-litters_df = read.csv(
+litters_df = read_csv(
   file = "data/FAS_litters.csv",
   na = c("NA", "", "."),
   col_types = cols(
@@ -51,6 +53,49 @@ pups_df = janitor::clean_names(pups_df)
 
 head(pups_df)
 ```
+
+
+## Import MLB 2011 Summary Data
+
+```{r}
+mlb_df = read_excel("data/mlb11.xlsx", sheet = "mlb11")
+```
+
+
+## Import SAS data
+
+```{r}
+pulse_df = read_sas("data/public_pulse_data.sas7bdat")
+head(pulse_df)
+```
+
+
+## Never use read.csv()
+
+read_csv is a Tibble function, whereas read.csv is local to R. The tibble version is faster, more memory efficient, and has some helpful abilities and guardrails.
+
+```{r}
+litters_df = read.csv("data/FAS_litters.csv")
+litters_df$L
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
