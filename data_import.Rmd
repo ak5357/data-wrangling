@@ -12,3 +12,49 @@ library(tidyverse)
 This document will show how to import data.
 
 
+## Import the FAS Litters CSV
+
+Import the dataset and clean the names.
+
+```{r}
+litters_df = read.csv(
+  file = "data/FAS_litters.csv",
+  na = c("NA", "", "."),
+  col_types = cols(
+    Group = col_factor()
+  )
+  )
+litters_df = janitor::clean_names(litters_df)
+```
+
+## Look at the dataset
+
+```{r}
+litters_df
+
+head(litters_df)
+tail(litters_df, 10)
+```
+
+```{r eval = FALSE}
+view(litters_df)
+```
+
+
+## Import the FAS Pups CSV
+
+Use relative path, much easier to use and to share with collaborators.
+
+```{r}
+pups_df = read.csv("data/FAS_pups.csv")
+pups_df = janitor::clean_names(pups_df)
+
+head(pups_df)
+```
+
+
+
+
+
+
+
