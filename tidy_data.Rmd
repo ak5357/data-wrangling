@@ -1,0 +1,186 @@
+---
+title: "Tidy Data"
+author: "ak5357"
+date: "2024-09-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(haven)
+library(tidyverse)
+```
+
+This document will show how to tidy data.
+
+```{r}
+pulse_df = 
+  read_sas("data/public_pulse_data.sas7bdat") |> 
+  janitor::clean_names()
+```
+
+
+## Pivot Longer
+
+This needs to go from wide to long format.
+
+```{r}
+pulse_tidy_df = 
+  pulse_df |> 
+  pivot_longer(
+    cols = bdi_score_bl:bdi_score_12m, #range of columns
+    names_to = "visit", #original column names will go into this new column
+    values_to = "bdi_score", #values will go to this new column
+    names_prefix = "bdi_score_" #removes prefix from old column names
+  ) |> 
+  mutate(
+    visit = replace(visit, visit == "bl", "00m") #replacing baseline visit with 00m
+  ) |> 
+  relocate(id, visit)
+
+
+pulse_tidy_df
+```
+
+
+Would be better to do the upper two code chunks in one code chunk.
+
+```{r}
+pulse_df = 
+  read_sas("data/public_pulse_data.sas7bdat") |> 
+  janitor::clean_names() |> 
+  pivot_longer(
+    cols = bdi_score_bl:bdi_score_12m, #range of columns
+    names_to = "visit", #original column names will go into this new column
+    values_to = "bdi_score", #values will go to this new column
+    names_prefix = "bdi_score_" #removes prefix from old column names
+  ) |> 
+  mutate(
+    visit = replace(visit, visit == "bl", "00m") #replacing baseline visit with 00m
+  ) |> 
+  relocate(id, visit) #puts id and visit columns first
+
+pulse_df
+```
+
+Do one more exmaple.
+
+```{r}
+litters_df = 
+  read_csv("data/FAS_litters.csv", na = c(".", "", " ")) |> 
+  janitor::clean_names() |> 
+  pivot_longer(
+    cols = gd0_weight:gd18_weight,
+    names_to = "gd_date",
+    values_to = "weight"
+  ) |> 
+  mutate(
+    gd_date = case_match(
+      gd_date,
+      "gd0_weight" ~ 0,
+      "gd18_weight" ~ 18
+    ))
+
+litters_df
+```
+
+
+## Pivot wider
+
+```{r}
+analysis_df = 
+  tibble(
+    group = c("treatment", "treatment", "control", "control"),
+    time = c("pre", "post", "pre", "post"),
+    mean = c(4, 10, 4.2, 5)
+  )
+
+analysis_df
+```
+
+Pivot wider for human readability.
+```{r}
+analysis_df |> 
+  pivot_wider(
+    names_from = time,
+    values_from = mean
+  )
+```
+
+
+## Bind tables
+
+This is where we'll learn to do knitr::kable()
+
+```{r}
+fellowship_ring = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "B3:D6") |>
+  mutate(movie = "fellowship_ring")
+
+two_towers = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "F3:H6") |>
+  mutate(movie = "two_towers")
+
+return_king = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "J3:L6") |>
+  mutate(movie = "return_king")
+
+lotr_df = 
+  bind_rows(fellowship_ring, two_towers, return_king) |> 
+  janitor::clean_names() |> 
+  pivot_longer(
+    cols = female:male,
+    names_to = "sex",
+    values_to = "words"
+  ) |> 
+  relocate(movie) |> 
+  mutate(race = str_to_lower(race))
+  
+lotr_df
+```
+
+
+## Joining Tables
+
+Import `litters` dataset.
+
+```{r}
+litters_df =
+  read_csv("data/FAS_litters.csv", na = c(".", "", " ", "NA")) |> 
+  janitor::clean_names() |> 
+  mutate(
+    wt_gain = gd18_weight - gd0_weight
+  ) |> 
+  separate(
+    group,
+    into = c("dose", "day_of_treatment"),
+    sep = 3
+  )
+
+litters_df
+```
+
+Import `pups` next!
+```{r}
+pups_df = 
+  read_csv("data/FAS_pups.csv", na = c(".", "", " ", "NA")) |> 
+  janitor::clean_names() |> 
+  mutate(
+    sex = case_match(
+      sex,
+      1 ~ "male",
+      2 ~ "female"
+    )
+  )
+
+pups_df
+```
+
+Join `litters` and `pups` dataframes together.
+
+```{r}
+fas_df = 
+  left_join(pups_df, litters_df, by = "litter_number")
+
+fas_df
+```
