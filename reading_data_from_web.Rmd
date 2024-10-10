@@ -42,7 +42,7 @@ table_marj
 ```
 
 
-### Learning Assessment
+### Learning Assessment: NYC Cost of Living
 
 Create a data frame that contains the cost of living table for New York from this page: https://www.bestplaces.net/cost_of_living/city/new_york/new_york.
 
@@ -58,7 +58,108 @@ nyc_cost_df =
 nyc_cost_df
 ```
 
+### CSS Selectors
 
+**Example: Star Wars Movies on IMDB**
+```{r}
+# Star Wars Movies
+swm_url = "https://www.imdb.com/list/ls070150896/"
+swm_html = read_html(swm_url)
+
+# Movie title
+swm_title_vec = swm_html |> 
+  html_elements(".dli-title") |> 
+  #html_elements(".ipc-title-link-wrapper .ipc-title__text") |> 
+  html_text()
+
+# Runtime
+swm_runtime_vec = swm_html |> 
+  html_elements(".dli-title-metadata-item:nth-child(2)") |> 
+  html_text()
+
+# Parental Guidance
+swm_pg_vec = swm_html |> 
+  html_elements(".dli-title-metadata-item:nth-child(3)") |> 
+  html_text()
+
+# Score
+swm_score_vec = swm_html |> 
+  html_elements(".metacritic-score-box") |> 
+  html_text()
+
+# All movie data in a df
+swm_df = 
+  tibble(
+    title = swm_title_vec,
+    runtime = swm_runtime_vec,
+    pg = swm_pg_vec,
+    score = swm_score_vec
+  )
+
+swm_df
+
+```
+
+
+**Example: Book Titles**
+```{r}
+books_url = "https://books.toscrape.com/"
+books_html = read_html(books_url)
+
+books_titles = 
+  books_html |> 
+  html_elements("h3") |> 
+  html_text2()
+
+books_stars = 
+  books_html |>
+  html_elements(".star-rating") |>
+  html_attr("class")
+
+books_price = 
+  books_html |>
+  html_elements(".price_color") |>
+  html_text()
+
+books_df = tibble(
+  title = books_titles,
+  stars = books_stars,
+  price = books_price
+)
+
+books_df
+```
+
+### Scrape API
+**Example: NYC Open Data**
+```{r}
+nyc_water = 
+  GET("https://data.cityofnewyork.us/resource/ia2d-e54m.csv") |> 
+  content()
+
+nyc_water
+```
+
+**Example: Data.gov Behavioral Risk Factors dataset**
+```{r}
+brfss_df = 
+  GET("https://chronicdata.cdc.gov/resource/acme-vg9e.csv",
+      query = list("$limit" = 5000)) |> #parameter for selecting more than the default given rows from this specific API
+  content()
+
+brfss_df
+```
+
+**Example: Pokemon API**
+This one spits out data that is definitely not a CSV.
+```{r}
+pokemon =
+  GET("https://pokeapi.co/api/v2/pokemon/ditto") |> 
+  content()
+
+pokemon$height
+pokemon$abilities
+```
 
 
 
