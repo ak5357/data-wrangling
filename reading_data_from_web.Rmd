@@ -1,0 +1,66 @@
+---
+title: "Reading Data from the Web"
+author: "ak5357"
+date: "2024-10-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(rvest)
+library(httr)
+```
+
+
+### Load data from web
+
+```{r}
+url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+drug_use_html = read_html(url)
+
+drug_use_html
+```
+
+
+### Extracting data from HTML
+
+To get a certain table from an HTML, you can use `first()` to get the first table, `last()` to get the last one, and `nth(x, n)` to get others.
+
+```{r}
+# Imports all tables from the HTML
+drug_use_html |>
+  html_table()
+
+# Import only the first table
+table_marj = 
+  drug_use_html |> 
+  html_table() |> 
+  first() |> 
+  slice(-1) #removes first column from table
+
+table_marj
+```
+
+
+### Learning Assessment
+
+Create a data frame that contains the cost of living table for New York from this page: https://www.bestplaces.net/cost_of_living/city/new_york/new_york.
+
+```{r}
+nyc_url = "https://www.bestplaces.net/cost_of_living/city/new_york/new_york"
+nyc_cost_html = read_html(nyc_url)
+
+nyc_cost_df =
+  nyc_cost_html |> 
+  html_table(header = TRUE) |> 
+  first()
+
+nyc_cost_df
+```
+
+
+
+
+
+
+
