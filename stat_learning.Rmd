@@ -111,17 +111,62 @@ How is this different from regression modeling?
 * Not going to give same regression coefficients.
 
 
+## Cluster pokemons
 
+```{r}
+pokemon_df =
+  read_csv("data/pokemon.csv") |> 
+  janitor::clean_names() |> 
+  select(hp, speed)
+```
 
+```{r}
+pokemon_df |> 
+  ggplot(aes(x = hp, y = speed)) +
+  geom_point()
+```
 
+Let's use kmeans to cluster these pokemon@@
 
+* It's build in to R, just like lm.
+```{r}
+kmeans_fit =
+  kmeans(x = pokemon_df, centers = 3)
+```
 
+Can I plot these results?
+```{r}
+pokemon_df =
+  broom::augment(kmeans_fit, pokemon_df)
 
+pokemon_df |> 
+  ggplot(aes(x = hp, y = speed, color = .cluster)) +
+  geom_point()
 
+```
 
+Repeat process with different numbers of centers.
 
+2 centers.
+```{r}
+kmeans(x = pokemon_df, centers = 2) |> 
+  broom::augment(pokemon_df) |> 
+  ggplot(aes(x = hp, y = speed, color = .cluster)) +
+  geom_point()
+```
 
+4 centers.
+```{r}
+kmeans(x = pokemon_df, centers = 4) |> 
+  broom::augment(pokemon_df) |> 
+  ggplot(aes(x = hp, y = speed, color = .cluster)) +
+  geom_point()
+```
 
-
-
-
+6 centers.
+```{r}
+kmeans(x = pokemon_df, centers = 6) |> 
+  broom::augment(pokemon_df) |> 
+  ggplot(aes(x = hp, y = speed, color = .cluster)) +
+  geom_point()
+```
